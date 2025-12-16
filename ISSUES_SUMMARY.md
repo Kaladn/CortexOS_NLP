@@ -152,30 +152,72 @@ The detailed issue definitions are available in:
 
 ## How to Create These Issues
 
-### Option 1: Using GitHub Web Interface
+### Option 1: Automated - Using the Provided Shell Script (Recommended)
+```bash
+# Prerequisites: Install GitHub CLI (gh)
+# macOS: brew install gh
+# Ubuntu/Debian: sudo apt install gh
+# Windows: winget install GitHub.cli
+
+# Authenticate with GitHub
+gh auth login
+
+# Install jq for JSON parsing
+# macOS: brew install jq
+# Ubuntu/Debian: sudo apt install jq
+
+# Run the script to create all issues
+./create_issues.sh
+```
+
+The `create_issues.sh` script will:
+- Read all issues from `issues_to_create.json`
+- Create each issue with proper title, description, and labels
+- Provide progress feedback for each issue
+
+### Option 2: Automated - Using the Python API Script
+```bash
+# Prerequisites: Python 3 and pip
+
+# Install PyGithub (or requests)
+pip install PyGithub
+
+# Get a GitHub personal access token from:
+# https://github.com/settings/tokens
+# Required scopes: 'repo' or 'public_repo'
+
+# Run the script
+export GITHUB_TOKEN=your_token_here
+python create_issues_api.py
+
+# Or pass token as argument
+python create_issues_api.py your_token_here
+```
+
+The `create_issues_api.py` script will:
+- Use GitHub REST API to create issues
+- Work with PyGithub or requests library
+- Handle rate limiting automatically
+
+### Option 3: Manual - Using GitHub Web Interface
 1. Navigate to https://github.com/Kaladn/CortexOS_NLP/issues/new
 2. Copy the title and description from this document for each issue
 3. Add the appropriate labels
 4. Submit each issue
+5. Repeat for all 15 issues
 
-### Option 2: Using GitHub CLI (if available)
+### Option 4: Manual - Using GitHub CLI
 ```bash
-# Install GitHub CLI if needed
-# brew install gh  # macOS
-# sudo apt install gh  # Ubuntu/Debian
-
 # Authenticate
 gh auth login
 
-# Create issues (requires manual execution or scripting)
+# Create issues one by one using the JSON data
+# Example for first issue:
 gh issue create --repo Kaladn/CortexOS_NLP \
-  --title "Issue Title" \
-  --body "Issue Description" \
-  --label "bug,P0"
+  --title "Missing CLI Module Referenced in setup.py" \
+  --body "$(jq -r '.[0].description' issues_to_create.json)" \
+  --label "bug,P1"
 ```
-
-### Option 3: Using GitHub API
-The `issues_to_create.json` file can be used with GitHub API to programmatically create issues.
 
 ## References
 
