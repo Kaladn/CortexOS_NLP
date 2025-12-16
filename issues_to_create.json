@@ -1,0 +1,92 @@
+[
+  {
+    "title": "Missing CLI Module Referenced in setup.py",
+    "description": "## Problem\n\nThe `setup.py` file references a CLI entry point that doesn't exist:\n\n**File:** `setup.py`\n**Issue:** `entry_points` reference \"cortexos_nlp.cli:main\" but `cli.py` is NOT PRESENT in the workspace.\n\n## Impact\n\n- Users cannot execute CLI commands\n- Package installation may fail or show warnings\n- Documentation may reference non-functional CLI\n\n## Expected Behavior\n\nEither:\n1. Create the missing `cli.py` module with a `main()` function, OR\n2. Remove the entry_points reference from setup.py\n\n## References\n\n- State Of Repository-1.md, Section 7: \"Referenced but Missing Components\"\n- Location: `cortexos_nlp/cli.py` (missing)\n- Reference: `setup.py` entry_points configuration",
+    "labels": ["bug", "P1"],
+    "priority": "P1"
+  },
+  {
+    "title": "Missing Model Data Files Referenced in package_data",
+    "description": "## Problem\n\nThe `setup.py` file references model and data files that don't exist:\n\n**File:** `setup.py`\n**Issue:** `package_data` includes patterns for:\n- \"data/*.json\"\n- \"data/*.txt\" \n- \"models/*.bin\"\n- \"models/*.json\"\n\nBut NONE of these files are PRESENT in the workspace.\n\n## Impact\n\n- Package build warnings\n- Missing data files that may be expected by users\n- Potentially broken functionality expecting these files\n\n## Expected Behavior\n\nEither:\n1. Create the missing data/model files, OR\n2. Remove these patterns from package_data configuration\n\n## References\n\n- State Of Repository-1.md, Section 6: \"Schema/File Dependencies\"\n- Location: `cortexos_nlp/data/` and `cortexos_nlp/models/` directories (missing)\n- Reference: `setup.py` package_data configuration",
+    "labels": ["bug", "P1"],
+    "priority": "P1"
+  },
+  {
+    "title": "Missing displacy_render and registry Imports",
+    "description": "## Problem\n\nThe `__init__.py` and `spacy_compatibility.py` files reference imports that don't exist:\n\n**Files:**\n- `cortexos_nlp/__init__.py`\n- `cortexos_nlp/api/spacy_compatibility.py`\n\n**Issues:**\n- `displacy` class in `__init__.py` imports non-existent `render` function\n- `registry` export in `__init__.py` is imported but not defined in `spacy_compatibility.py`\n\n## Impact\n\n- ImportError when users try to use these features\n- Broken spaCy compatibility layer\n- API incompleteness\n\n## Expected Behavior\n\nEither:\n1. Implement the missing `displacy_render` and `registry` components, OR\n2. Remove these imports from the public API\n\n## References\n\n- State Of Repository-1.md, Section 7: \"Declared but Unused Code Paths\"\n- Locations: \n  - `cortexos_nlp/__init__.py`\n  - `cortexos_nlp/api/spacy_compatibility.py`",
+    "labels": ["bug", "P2"],
+    "priority": "P2"
+  },
+  {
+    "title": "Hardcoded Absolute Path May Cause Deployment Issues",
+    "description": "## Problem\n\nMultiple files contain hardcoded absolute paths:\n\n**Files:**\n- `cortexos_nlp/api/cortex_nlp.py`\n- `cortexos_nlp/api/spacy_compatibility.py`\n\n**Issue:** Hardcoded path `/home/ubuntu/cortexos_nlp` may not match actual deployment environment.\n\n## Impact\n\n- Import failures in different environments\n- Deployment issues on Windows, macOS, or different Linux configurations\n- Developer onboarding problems\n\n## Expected Behavior\n\nUse relative imports or dynamic path resolution instead of hardcoded absolute paths.\n\n## Suggested Fix\n\n```python\n# Instead of:\nsys.path.append('/home/ubuntu/cortexos_nlp')\n\n# Use:\nimport os\nBASE_DIR = os.path.dirname(os.path.abspath(__file__))\nsys.path.append(BASE_DIR)\n```\n\n## References\n\n- State Of Repository-1.md, Section 4: \"Runtime Import Behavior\"\n- State Of Repository-1.md, Section 7: \"Referenced but Missing Components\"\n- Locations:\n  - `cortexos_nlp/api/cortex_nlp.py`\n  - `cortexos_nlp/api/spacy_compatibility.py`",
+    "labels": ["bug", "P1"],
+    "priority": "P1"
+  },
+  {
+    "title": "Unbounded Cache Growth May Cause Out-of-Memory Errors",
+    "description": "## Problem\n\nMultiple cache dictionaries grow unbounded without any eviction mechanism:\n\n**Affected Classes:**\n\n1. **SpatialAnchor** (`core/spatial_anchor.py`)\n   - `_coordinate_cache: Dict[str, (str, SpatialCoordinate)]` - unbounded\n\n2. **BinaryCellMemory** (`core/binary_cell_memory.py`)\n   - `_forward_index: Dict[str, List[Relationship]]` - unbounded\n   - `_reverse_index: Dict[str, List[Relationship]]` - unbounded  \n   - `_type_index: Dict[RelationshipType, List[Relationship]]` - unbounded\n\n3. **HarmonicResonance** (`core/harmonic_resonance.py`)\n   - `_frequency_cache: Dict[Tuple, float]` - unbounded\n\n4. **SharedLinguisticCache**\n   - `coordinate_cache: Dict[str, SpatialCoordinate]` - unbounded\n   - `pos_cache: Dict[Tuple, str]` - unbounded\n   - `dependency_cache: Dict[Tuple, float]` - unbounded\n   - `rule_cache: Dict[str, List]` - unbounded\n\n## Impact\n\n- **Memory exhaustion** in long-running processes\n- **Performance degradation** as dictionaries grow large\n- **System instability** with OOM errors\n- No memory pressure handling\n\n## Expected Behavior\n\nImplement cache eviction strategies such as:\n- LRU (Least Recently Used) cache with configurable max size\n- TTL (Time To Live) based eviction\n- Memory pressure monitoring\n- Periodic cleanup mechanisms\n\n## Suggested Fix\n\nUse Python's `functools.lru_cache` or implement custom LRU with `collections.OrderedDict` with max_size parameter.\n\n## References\n\n- State Of Repository-1.md, Section 5: \"STATE & MEMORY\"\n- Locations:\n  - `cortexos_nlp/core/spatial_anchor.py`\n  - `cortexos_nlp/core/binary_cell_memory.py`\n  - `cortexos_nlp/core/harmonic_resonance.py`\n  - `cortexos_nlp/linguistic/integrated_processor.py`",
+    "labels": ["bug", "P0"],
+    "priority": "P0"
+  },
+  {
+    "title": "Unused numpy Dependency Should Be Removed",
+    "description": "## Problem\n\n`numpy` is declared in `requirements.txt` (>=1.20.0) but is NOT imported or used in any analyzed code files.\n\n## Impact\n\n- Unnecessary dependency installation\n- Increased package size\n- Potential version conflicts\n- Confusion about actual dependencies\n\n## Expected Behavior\n\nEither:\n1. Remove `numpy` from `requirements.txt` if not needed, OR\n2. Document why it's included (future use, optional feature, etc.)\n\n## References\n\n- State Of Repository-1.md, Section 4: \"External Imports (Third-party)\"\n- State Of Repository-1.md, Section 7: \"Declared but Unused Code Paths\"\n- Location: `requirements.txt`",
+    "labels": ["enhancement", "P2"],
+    "priority": "P2"
+  },
+  {
+    "title": "Incomplete explain() Function Implementation",
+    "description": "## Problem\n\nThe `explain()` function is declared in `spacy_compatibility.py` but the implementation is incomplete.\n\n**File:** `cortexos_nlp/api/spacy_compatibility.py`\n\n## Impact\n\n- Users cannot get processing explanations\n- API incompleteness\n- Potential runtime errors if function is called\n\n## Expected Behavior\n\nEither:\n1. Complete the implementation of `explain()` function, OR\n2. Mark it as NotImplemented with proper error message, OR\n3. Remove it from the public API\n\n## References\n\n- State Of Repository-1.md, Section 7: \"Declared but Unused Code Paths\"\n- Location: `cortexos_nlp/api/spacy_compatibility.py`, function `explain(text: str) -> str`",
+    "labels": ["enhancement", "P3"],
+    "priority": "P3"
+  },
+  {
+    "title": "Named Entity Recognition Not Implemented",
+    "description": "## Problem\n\nNamed Entity Recognition (NER) is not implemented. The `Doc.ents` property returns an empty list and is marked as \"future implementation\".\n\n**File:** `cortexos_nlp/api/cortex_doc.py`\n**Property:** `ents`\n\n## Impact\n\n- Missing core NLP functionality\n- Incomplete spaCy compatibility\n- Users expecting NER will get empty results\n\n## Expected Behavior\n\nImplement named entity recognition or clearly document this limitation in the public API documentation.\n\n## References\n\n- State Of Repository-1.md, Section 1: \"What This Module Explicitly DOES NOT Do\"\n- State Of Repository-1.md, Section 7: \"Declared but Unused Code Paths\"\n- Location: `cortexos_nlp/api/cortex_doc.py`, property `ents`",
+    "labels": ["enhancement", "P2"],
+    "priority": "P2"
+  },
+  {
+    "title": "Noun Phrase Chunking Not Implemented",
+    "description": "## Problem\n\nNoun phrase chunking is not implemented. The `Doc.noun_chunks` property returns an empty list and is marked as \"future implementation\".\n\n**File:** `cortexos_nlp/api/cortex_doc.py`\n**Property:** `noun_chunks`\n\n## Impact\n\n- Missing NLP functionality\n- Incomplete spaCy compatibility  \n- Users expecting noun chunks will get empty results\n\n## Expected Behavior\n\nImplement noun phrase chunking or clearly document this limitation in the public API documentation.\n\n## References\n\n- State Of Repository-1.md, Section 1: \"What This Module Explicitly DOES NOT Do\"\n- State Of Repository-1.md, Section 7: \"Declared but Unused Code Paths\"\n- Location: `cortexos_nlp/api/cortex_doc.py`, property `noun_chunks`",
+    "labels": ["enhancement", "P2"],
+    "priority": "P2"
+  },
+  {
+    "title": "SpacyCompatibilityError Exception Never Raised",
+    "description": "## Problem\n\n`SpacyCompatibilityError` exception class is defined but never raised in any analyzed code.\n\n**File:** `cortexos_nlp/api/spacy_compatibility.py`\n\n## Impact\n\n- Dead code\n- Unclear error handling strategy\n- Potential confusion about when this error should be used\n\n## Expected Behavior\n\nEither:\n1. Use the exception where appropriate (e.g., compatibility issues), OR\n2. Remove the unused exception class\n\n## References\n\n- State Of Repository-1.md, Section 7: \"Defined but Unraised Exceptions\"\n- Location: `cortexos_nlp/api/spacy_compatibility.py`, class `SpacyCompatibilityError`",
+    "labels": ["enhancement", "P3"],
+    "priority": "P3"
+  },
+  {
+    "title": "Limited Language Support - English Only",
+    "description": "## Problem\n\nThe module only supports English language processing:\n\n**Hardcoded English-specific features:**\n- English stop words\n- English grammar rules  \n- English morphological patterns\n- POS tag dictionary assumes English\n\n## Impact\n\n- Cannot process non-English text accurately\n- Limited international usability\n- No multilingual support\n\n## Expected Behavior\n\n1. Document the English-only limitation clearly\n2. Consider adding language detection\n3. Plan for multi-language support in future\n\n## References\n\n- State Of Repository-1.md, Section 7: \"Implicit Assumptions Required for Correct Operation\"\n- Locations:\n  - `cortexos_nlp/linguistic/tokenizer.py`\n  - `cortexos_nlp/linguistic/tagger.py`\n  - `cortexos_nlp/linguistic/parser.py`",
+    "labels": ["enhancement", "documentation", "P3"],
+    "priority": "P3"
+  },
+  {
+    "title": "No Unicode Edge Case Handling",
+    "description": "## Problem\n\nThe module lacks proper handling for Unicode edge cases:\n\n**Missing handling for:**\n- Malformed Unicode\n- Zero-width characters\n- Complex scripts (Arabic, Chinese, etc.)\n- Right-to-left text\n- Combining diacritics\n\n**Current assumptions:**\n- Text is UTF-8 encoded (no explicit encoding handling)\n- Whitespace handling assumes ASCII/Unicode whitespace\n- Case-insensitive normalization assumes simple lowercase conversion\n\n## Impact\n\n- Text processing failures on non-ASCII text\n- Incorrect tokenization for complex scripts\n- Potential crashes on malformed input\n\n## Expected Behavior\n\n1. Add explicit UTF-8 encoding/decoding with error handling\n2. Handle Unicode normalization (NFC, NFD, NFKC, NFKD)\n3. Add tests for edge cases\n4. Document supported character sets\n\n## References\n\n- State Of Repository-1.md, Section 7: \"Implicit Assumptions Required for Correct Operation\"\n- Locations:\n  - `cortexos_nlp/core/spatial_anchor.py`\n  - `cortexos_nlp/linguistic/tokenizer.py`",
+    "labels": ["bug", "enhancement", "P2"],
+    "priority": "P2"
+  },
+  {
+    "title": "Missing Thread Safety Mechanisms",
+    "description": "## Problem\n\nNo thread safety mechanisms observed in the codebase:\n\n**Issues:**\n- Shared caches accessed without locks\n- No synchronization primitives\n- Single-threaded execution assumed\n- Potential race conditions in multi-threaded environments\n\n**Affected Components:**\n- All cache dictionaries\n- Statistics counters\n- Memory indexes\n\n## Impact\n\n- Race conditions in multi-threaded applications\n- Data corruption in concurrent access scenarios\n- Unpredictable behavior in parallel processing\n- Cannot safely use in async/concurrent contexts\n\n## Expected Behavior\n\nEither:\n1. Add thread-safe locking mechanisms (threading.Lock), OR\n2. Document that the module is not thread-safe, OR  \n3. Provide thread-safe alternatives (thread-local storage)\n\n## References\n\n- State Of Repository-1.md, Section 7: \"Implicit Assumptions Required for Correct Operation\"\n- Locations:\n  - `cortexos_nlp/core/spatial_anchor.py`\n  - `cortexos_nlp/core/binary_cell_memory.py`\n  - `cortexos_nlp/core/harmonic_resonance.py`\n  - `cortexos_nlp/linguistic/integrated_processor.py`",
+    "labels": ["enhancement", "P1"],
+    "priority": "P1"
+  },
+  {
+    "title": "Add Comprehensive API Documentation",
+    "description": "## Problem\n\nWhile the code has inline comments, comprehensive API documentation is needed:\n\n**Missing documentation:**\n- Public API reference guide\n- Usage examples for all major features\n- Integration guides\n- Architecture overview\n- Performance characteristics\n- Limitations and assumptions\n\n## Impact\n\n- Difficult for new users to get started\n- Unclear usage patterns\n- Hidden limitations not documented\n- Integration challenges\n\n## Expected Behavior\n\nCreate comprehensive documentation including:\n1. API reference with all public classes/functions\n2. Quick start guide\n3. Usage examples\n4. Architecture documentation\n5. Performance guide\n6. Known limitations\n7. Comparison with spaCy\n\n## References\n\n- State Of Repository-1.md: All sections provide material for documentation\n- Consider using Sphinx or MkDocs for documentation generation",
+    "labels": ["documentation", "P2"],
+    "priority": "P2"
+  },
+  {
+    "title": "Add Unit Tests for Core Components",
+    "description": "## Problem\n\nNo unit tests are mentioned or visible in the repository analysis.\n\n**Components needing tests:**\n- SpatialAnchor coordinate generation\n- BinaryCellMemory relationship storage\n- HarmonicResonance similarity calculation\n- Tokenizer patterns\n- POS tagger rules\n- Dependency parser\n- API layer\n- Cache management\n\n## Impact\n\n- No regression prevention\n- Difficult to refactor safely\n- Unknown code coverage\n- Quality concerns\n\n## Expected Behavior\n\nCreate comprehensive test suite:\n1. Unit tests for all core components\n2. Integration tests for pipeline\n3. Edge case tests\n4. Performance benchmarks\n5. CI/CD integration\n\n## Suggested Framework\n\n- pytest for test framework\n- pytest-cov for coverage reporting\n- Target: >80% code coverage\n\n## References\n\n- State Of Repository-1.md: All sections provide test scenarios\n- Test data should cover edge cases mentioned in Section 7",
+    "labels": ["enhancement", "P1"],
+    "priority": "P1"
+  }
+]
