@@ -93,7 +93,8 @@ def create_issues_with_requests(token, repo_name, issues):
     """Create issues using requests library and GitHub REST API."""
     headers = {
         'Authorization': f'token {token}',
-        'Accept': 'application/vnd.github.v3+json'
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
     }
     
     api_url = f"https://api.github.com/repos/{repo_name}/issues"
