@@ -5,10 +5,15 @@
 # Prerequisites:
 # 1. Install GitHub CLI: https://cli.github.com/
 # 2. Authenticate: gh auth login
-# 3. Run this script: ./create_issues.sh
+# 3. Run this script: ./create_issues.sh [REPO] [ISSUES_FILE]
+#
+# Usage:
+#   ./create_issues.sh                           # Uses defaults
+#   ./create_issues.sh owner/repo                # Custom repo
+#   ./create_issues.sh owner/repo issues.json    # Custom repo and file
 
-REPO="Kaladn/CortexOS_NLP"
-ISSUES_FILE="issues_to_create.json"
+REPO="${1:-Kaladn/CortexOS_NLP}"
+ISSUES_FILE="${2:-issues_to_create.json}"
 
 echo "=========================================="
 echo "Creating GitHub Issues for $REPO"

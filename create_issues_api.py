@@ -7,8 +7,17 @@ Prerequisites:
     pip install PyGithub
 
 Usage:
-    python create_issues_api.py <github_token>
+    python create_issues_api.py <github_token> [repo_name] [issues_file]
+    
+    github_token: Your GitHub personal access token (or set GITHUB_TOKEN env var)
+    repo_name: Repository in format 'owner/repo' (default: Kaladn/CortexOS_NLP)
+    issues_file: Path to JSON file (default: issues_to_create.json)
 
+Examples:
+    python create_issues_api.py my_token
+    python create_issues_api.py my_token owner/repo
+    python create_issues_api.py my_token owner/repo custom_issues.json
+    
 Or set GITHUB_TOKEN environment variable:
     export GITHUB_TOKEN=your_token_here
     python create_issues_api.py
@@ -32,21 +41,22 @@ except ImportError:
         print("Please install one: pip install PyGithub  OR  pip install requests")
         sys.exit(1)
 
-REPO_NAME = "Kaladn/CortexOS_NLP"
-ISSUES_FILE = "issues_to_create.json"
+# Default values (can be overridden by command line arguments)
+DEFAULT_REPO_NAME = "Kaladn/CortexOS_NLP"
+DEFAULT_ISSUES_FILE = "issues_to_create.json"
 
-def load_issues():
+def load_issues(filepath):
     """Load issues from JSON file."""
-    with open(ISSUES_FILE, 'r') as f:
+    with open(filepath, 'r') as f:
         return json.load(f)
 
-def create_issues_with_pygithub(token, issues):
+def create_issues_with_pygithub(token, repo_name, issues):
     """Create issues using PyGithub library."""
     print(f"Connecting to GitHub as authenticated user...")
     g = Github(token)
     
     try:
-        repo = g.get_repo(REPO_NAME)
+        repo = g.get_repo(repo_name)
         print(f"Repository: {repo.full_name}")
         print(f"Creating {len(issues)} issues...\n")
         
@@ -73,20 +83,20 @@ def create_issues_with_pygithub(token, issues):
         print(f"\n{'='*80}")
         print(f"Successfully created {created_count}/{len(issues)} issues")
         print(f"{'='*80}")
-        print(f"\nView all issues at: https://github.com/{REPO_NAME}/issues")
+        print(f"\nView all issues at: https://github.com/{repo_name}/issues")
         
     except Exception as e:
         print(f"ERROR: {str(e)}")
         sys.exit(1)
 
-def create_issues_with_requests(token, issues):
+def create_issues_with_requests(token, repo_name, issues):
     """Create issues using requests library and GitHub REST API."""
     headers = {
         'Authorization': f'token {token}',
         'Accept': 'application/vnd.github.v3+json'
     }
     
-    api_url = f"https://api.github.com/repos/{REPO_NAME}/issues"
+    api_url = f"https://api.github.com/repos/{repo_name}/issues"
     
     print(f"Creating {len(issues)} issues using GitHub REST API...\n")
     
@@ -119,20 +129,36 @@ def create_issues_with_requests(token, issues):
     print(f"\n{'='*80}")
     print(f"Successfully created {created_count}/{len(issues)} issues")
     print(f"{'='*80}")
-    print(f"\nView all issues at: https://github.com/{REPO_NAME}/issues")
+    print(f"\nView all issues at: https://github.com/{repo_name}/issues")
 
 def main():
-    # Get GitHub token
+    # Parse command line arguments
     token = None
+    repo_name = DEFAULT_REPO_NAME
+    issues_file = DEFAULT_ISSUES_FILE
+    
+    # Get GitHub token
     if len(sys.argv) > 1:
         token = sys.argv[1]
     else:
         token = os.environ.get('GITHUB_TOKEN')
     
+    # Get repository name (optional)
+    if len(sys.argv) > 2:
+        repo_name = sys.argv[2]
+    
+    # Get issues file path (optional)
+    if len(sys.argv) > 3:
+        issues_file = sys.argv[3]
+    
     if not token:
         print("ERROR: GitHub token not provided")
         print("\nUsage:")
-        print("  python create_issues_api.py <github_token>")
+        print("  python create_issues_api.py <github_token> [repo_name] [issues_file]")
+        print("\nExamples:")
+        print("  python create_issues_api.py my_token")
+        print("  python create_issues_api.py my_token owner/repo")
+        print("  python create_issues_api.py my_token owner/repo custom.json")
         print("\nOr set environment variable:")
         print("  export GITHUB_TOKEN=your_token_here")
         print("  python create_issues_api.py")
@@ -142,25 +168,26 @@ def main():
     
     # Load issues
     try:
-        issues = load_issues()
+        issues = load_issues(issues_file)
     except FileNotFoundError:
-        print(f"ERROR: {ISSUES_FILE} not found")
+        print(f"ERROR: {issues_file} not found")
         sys.exit(1)
     except json.JSONDecodeError as e:
-        print(f"ERROR: Invalid JSON in {ISSUES_FILE}: {e}")
+        print(f"ERROR: Invalid JSON in {issues_file}: {e}")
         sys.exit(1)
     
     print("="*80)
-    print(f"GitHub Issues Creator for {REPO_NAME}")
+    print(f"GitHub Issues Creator for {repo_name}")
     print("="*80)
+    print(f"Issues file: {issues_file}")
     print(f"Issues to create: {len(issues)}")
     print()
     
     # Create issues using available library
     if USE_PYGITHUB:
-        create_issues_with_pygithub(token, issues)
+        create_issues_with_pygithub(token, repo_name, issues)
     else:
-        create_issues_with_requests(token, issues)
+        create_issues_with_requests(token, repo_name, issues)
 
 if __name__ == "__main__":
     main()
