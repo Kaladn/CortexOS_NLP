@@ -1,0 +1,14 @@
+# CortexOS NLP - Core Dependencies
+# The World's First Mathematically Certain Natural Language Processing Engine
+
+# Core numerical computing
+numpy>=1.20.0
+
+# Python compatibility
+dataclasses>=0.6; python_version<"3.7"
+typing-extensions>=3.7.4; python_version<"3.8"
+
+# Optional performance dependencies (installed separately)
+# psutil>=5.8.0  # For performance monitoring
+# memory-profiler>=0.60.0  # For memory analysis
+

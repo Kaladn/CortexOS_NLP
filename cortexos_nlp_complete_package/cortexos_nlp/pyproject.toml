@@ -1,0 +1,187 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cortexos-nlp"
+version = "1.0.0"
+description = "The World's First Mathematically Certain Natural Language Processing Engine"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "CortexOS Team", email = "support@cortexos.ai"}
+]
+maintainers = [
+    {name = "CortexOS Team", email = "support@cortexos.ai"}
+]
+keywords = [
+    "nlp",
+    "natural language processing", 
+    "deterministic",
+    "mathematical",
+    "spacy",
+    "linguistics",
+    "text processing",
+    "machine learning",
+    "artificial intelligence",
+    "cortexos"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Natural Language :: English",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.20.0",
+    "dataclasses>=0.6; python_version<'3.7'",
+    "typing-extensions>=3.7.4; python_version<'3.8'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "isort>=5.0",
+    "flake8>=3.8",
+    "mypy>=0.800",
+    "sphinx>=4.0",
+    "sphinx-rtd-theme>=0.5",
+]
+performance = [
+    "psutil>=5.8.0",
+    "memory-profiler>=0.60.0",
+]
+all = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0", 
+    "black>=21.0",
+    "isort>=5.0",
+    "flake8>=3.8",
+    "mypy>=0.800",
+    "sphinx>=4.0",
+    "sphinx-rtd-theme>=0.5",
+    "psutil>=5.8.0",
+    "memory-profiler>=0.60.0",
+]
+
+[project.urls]
+Homepage = "https://cortexos.ai/nlp"
+Documentation = "https://docs.cortexos.ai/nlp"
+Repository = "https://github.com/cortexos/cortexos-nlp"
+"Bug Tracker" = "https://github.com/cortexos/cortexos-nlp/issues"
+Changelog = "https://github.com/cortexos/cortexos-nlp/blob/main/CHANGELOG.md"
+
+[project.scripts]
+cortexos-nlp = "cortexos_nlp.cli:main"
+cortex-nlp = "cortexos_nlp.cli:main"
+
+[tool.setuptools]
+packages = ["cortexos_nlp"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+cortexos_nlp = [
+    "data/*.json",
+    "data/*.txt", 
+    "models/*.bin",
+    "models/*.json",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["cortexos_nlp"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = [
+    "tests",
+]
+python_files = [
+    "test_*.py",
+    "*_test.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "performance: marks tests as performance benchmarks",
+]
+
+[tool.coverage.run]
+source = ["cortexos_nlp"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
